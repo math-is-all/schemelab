@@ -1,0 +1,41 @@
+Exec=systemsettings
+Icon=preferences-system
+Type=Application
+SingleMainWindow=true
+X-DocPath=systemsettings/index.html
+StartupNotify=true
+X-KDE-Shortcuts=Tools
+
+OnlyShowIn=KDE;
+Actions=kcm-lookandfeel;kcm-users;kcm-screenlocker;kcm-powerdevilprofilesconfig;kcm-kscreen;
+
+GenericName=System Settings
+
+Name=System Settings
+
+Comment=Configuration tools for your computer
+X-DBUS-StartupType=Unique
+X-DBUS-ServiceName=org.kde.systemsettings
+Categories=Qt;KDE;Settings;
+Keywords=systemsettings
+
+Name=Global Theme
+Icon=preferences-desktop-theme-global
+Exec=systemsettings kcm_lookandfeel
+
+Name=Users
+Icon=preferences-system-users
+Exec=systemsettings kcm_users
+
+Name=Screen Locking
+Icon=preferences-desktop-user-password
+Exec=systemsettings kcm_screenlocker
+
+Name=Power Management
+Icon=preferences-system-power-management
+Exec=systemsettings kcm_powerdevilprofilesconfig
+
+Name=Display Configuration
+Icon=preferences-desktop-display-randr
+Exec=systemsettings kcm_kscreen
+
