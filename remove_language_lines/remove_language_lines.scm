@@ -1,3 +1,6 @@
+
+;;this code by AI
+
 ;; 自定义 string-contains? 函数
 (define (string-contains? str substr)
   (let loop ((i 0))
