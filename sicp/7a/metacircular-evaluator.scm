@@ -173,7 +173,7 @@
     (apply proc args))
 
 ;;;debug-one
-(define sicp-apply      
+(define sicp-apply-debug
     (lambda (proc args)  
       (begin            
         (display "Applying: ") (display proc) (newline)
@@ -182,7 +182,7 @@
           ((primitive? proc)               
            (sicp-apply-primitive proc args))
           ((eq? (car proc) 'CLOSURE)
-           (sicp-eval       
+           (sicp-eval-debug
              (cadadr proc)
              (sicp-bind    
                (caadr proc)
@@ -206,7 +206,7 @@
             (else 'error))))
 
 ;;;debug-one
-(define sicp-eval
+(define sicp-eval-debug
   (lambda (exp env)
     (display "Evaluating: ") (display exp) (newline)
     ;(display "Enviroment: ") (display env) (newline)
@@ -219,11 +219,9 @@
        (list 'CLOSURE (cdr exp) env))
       ((eq? (car exp) 'cond)
        (sicp-evcond (cdr exp) env))
-      (else (let ((proc (sicp-eval (car exp) env))
+      (else (let ((proc (sicp-eval-debug (car exp) env))
                   (args (sicp-evlist (cdr exp) env)))
-              ;(display "Applying: ") (display proc) (newline)
-              ;(display "With args: ") (display args) (newline)
-              (sicp-apply proc args))))))
+              (sicp-apply-debug proc args))))))
 
 ;;;stable-one
 (define sicp-eval
