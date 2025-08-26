@@ -1,3 +1,5 @@
+;;wirte on Chez Scheme 10.2.0 https://github.com/cisco/ChezScheme/releases/tag/v10.2.0
+
 (define false?
   (lambda (x) (eq? x #f)))
 
@@ -70,7 +72,7 @@
           (else #f))))
 
 
-;;;stable-one-v1.1
+;;;stable-one-v1.2
 (define primitive?
       (lambda (proc)
         (cond
@@ -89,6 +91,7 @@
           ((eq? proc zero?) #t)
           ((eq? proc null?) #t)
           ((eq? proc cons) #t)
+          ((eq? proc display) #t)
           (else #f))))
 
 (define primitive-list
@@ -155,6 +158,7 @@
             (cons 'magnitude magnitude)
             (cons 'angle angle)
             (cons 'complex? complex?)
+            (cons 'display display)
             (cons 'Y1 (lambda (f1)  
               ((lambda (f2) (f2 f2))
               (lambda (f3)
@@ -205,6 +209,7 @@
                  (caddr proc))))
             (else 'error))))
 
+
 ;;;debug-one
 (define sicp-eval-debug
   (lambda (exp env)
@@ -219,11 +224,14 @@
        (list 'CLOSURE (cdr exp) env))
       ((eq? (car exp) 'cond)
        (sicp-evcond (cdr exp) env))
+      ((and (eq? (car exp) 'begin) (eq? (cdr exp) '())) '())
+      ((eq? (car exp) 'begin)
+       (cons (sicp-eval-debug (cadr exp) env) (sicp-eval-debug (cons (car exp) (cddr exp)) env)))
       (else (let ((proc (sicp-eval-debug (car exp) env))
                   (args (sicp-evlist (cdr exp) env)))
               (sicp-apply-debug proc args))))))
 
-;;;stable-one
+;;;stable-one-v1.1
 (define sicp-eval
       (lambda (exp env)
         (cond 
@@ -239,6 +247,37 @@
                   (sicp-eval (car exp) env)
                   (sicp-evlist (cdr exp) env))))))
 
+
+
+;;;stable-one-v1.2 add begin as syntax key word
+(define sicp-eval
+      (lambda (exp env)
+        (cond
+          ((boolean? exp) exp)
+          ((number? exp) exp)
+          ((symbol? exp) (sicp-lookup exp env))
+          ((eq? (car exp) (quote quote)) (cadr exp))
+          ((eq? (car exp) 'lambda)
+           (list 'CLOSURE (cdr exp) env))
+          ((eq? (car exp) 'cond)
+           (sicp-evcond (cdr exp) env))
+;          ((and (eq? (car exp) 'begin) (eq? (cdr exp) '())) #t)
+;          ((eq? (car exp) 'begin)
+;           (begin (sicp-eval (cadr exp) env) (sicp-eval (cons (car exp) (cddr exp)) env)))
+          ((and (list? exp) (eq? (car exp) 'begin))
+            (evbegin (cdr exp) env #f))
+          ((and (eq? (car exp) 'begin-list) (eq? (cdr exp) '())) '())
+          ((eq? (car exp) 'begin-list)
+           (cons (sicp-eval (cadr exp) env) (sicp-eval (cons (car exp) (cddr exp)) env)))
+          (else (sicp-apply
+                  (sicp-eval (car exp) env)
+                  (sicp-evlist (cdr exp) env))))))
+
+(define evbegin
+  (lambda (exp env result)
+    (if (null? exp)
+      result
+      (evbegin (cdr exp) env (sicp-eval (car exp) env)))))
 
 (define pair-up                       
       (lambda (vars vals)                
@@ -347,13 +386,39 @@
       ((lambda (x) (f (lambda (y) ((x x) y))))
        (lambda (x) (f (lambda (y) ((x x) y)))))))
 
-       (define Y1 (lambda (f1)
-            ((lambda (f2) (f2 f2))
-            (lambda (f3)
-                (lambda (f4)
-                    ((f1 (f3 f3))
-                    f4))))))
+
+(define Y1 (lambda (f1)
+  ((lambda (f2) (f2 f2))
+    (lambda (f3)
+      (lambda (f4)
+        ((f1 (f3 f3))
+         f4))))))
 
 ((Y FACT-G) 20)
 ((Y1 FACT-G) 20)
 (FACT 20)
+(sicp-eval (quote (((lambda (f1)
+              ((lambda (f2) (f2 f2))
+              (lambda (f3)
+                  (lambda (f4)
+                      ((f1 (f3 f3))
+                      f4)))))
+              (lambda (f)
+                (lambda (n)
+                  (cond
+                    ((<= n 0) 1)
+                    (else (* n (f (- n 1))))))))
+             100) )
+             E0)
+;(sicp-eval '((Y G) 100) (cons (list
+;(cons 'Y '(lambda (f1)
+;              ((lambda (f2) (f2 f2))
+;              (lambda (f3)
+;                  (lambda (f4)
+;                      ((f1 (f3 f3))
+;                      f4))))))
+;                      (cons 'G '(lambda (f)
+;                (lambda (n)
+;                  (cond
+;                    ((<= n 0) 1)
+;                    (else (* n (f (- n 1))))))))) E2))
