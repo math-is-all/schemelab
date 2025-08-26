@@ -220,6 +220,17 @@
       ((number? exp) exp)
       ((symbol? exp) (sicp-lookup exp env))
       ((eq? (car exp) (quote quote)) (cadr exp))
+      ((and (list? (cadr exp)) (eq? (car exp) 'let))
+       (sicp-eval-debug
+         (caddr exp)
+         (cons
+           (map
+             (lambda (list_2)
+               (cons
+                 (car list_2)
+                 (sicp-eval-debug (cadr list_2) env)))
+             (cadr exp))
+           env)))
       ((eq? (car exp) 'lambda)
        (list 'CLOSURE (cdr exp) env))
       ((eq? (car exp) 'cond)
@@ -257,13 +268,20 @@
           ((number? exp) exp)
           ((symbol? exp) (sicp-lookup exp env))
           ((eq? (car exp) (quote quote)) (cadr exp))
+;          ((and (list? (cadr exp)) (eq? (car exp) 'let))
+;           (sicp-eval (caddr exp) (cons (cadr exp) env)))
+          ((and (list? (cadr exp)) (eq? (car exp) 'let))
+           (sicp-eval (caddr exp) (cons
+                                    (map
+                                      (lambda (list_2) (cons
+                                                         (car list_2)
+                                                         (sicp-eval (cadr list_2) env)))
+                                      (cadr exp))
+                                    env)))
           ((eq? (car exp) 'lambda)
            (list 'CLOSURE (cdr exp) env))
           ((eq? (car exp) 'cond)
            (sicp-evcond (cdr exp) env))
-;          ((and (eq? (car exp) 'begin) (eq? (cdr exp) '())) #t)
-;          ((eq? (car exp) 'begin)
-;           (begin (sicp-eval (cadr exp) env) (sicp-eval (cons (car exp) (cddr exp)) env)))
           ((and (list? exp) (eq? (car exp) 'begin))
             (evbegin (cdr exp) env #f))
           ((and (eq? (car exp) 'begin-list) (eq? (cdr exp) '())) '())
