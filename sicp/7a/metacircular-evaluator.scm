@@ -260,7 +260,7 @@
 
 
 
-;;;stable-one-v1.2 add begin as syntax key word
+;;;stable-one-v1.3 add begin and let as syntax key word
 (define sicp-eval
       (lambda (exp env)
         (cond
@@ -268,16 +268,18 @@
           ((number? exp) exp)
           ((symbol? exp) (sicp-lookup exp env))
           ((eq? (car exp) (quote quote)) (cadr exp))
-;          ((and (list? (cadr exp)) (eq? (car exp) 'let))
-;           (sicp-eval (caddr exp) (cons (cadr exp) env)))
           ((and (list? (cadr exp)) (eq? (car exp) 'let))
-           (sicp-eval (caddr exp) (cons
-                                    (map
-                                      (lambda (list_2) (cons
-                                                         (car list_2)
-                                                         (sicp-eval (cadr list_2) env)))
-                                      (cadr exp))
-                                    env)))
+           (sicp-eval
+             (caddr exp)
+             (cons
+               (map
+                 (lambda
+                   (list_2)
+                   (cons
+                     (car list_2)
+                     (sicp-eval (cadr list_2) env)))
+                 (cadr exp))
+               env)))
           ((eq? (car exp) 'lambda)
            (list 'CLOSURE (cdr exp) env))
           ((eq? (car exp) 'cond)
